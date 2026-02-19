@@ -6,7 +6,7 @@ import ConversationHistory from './components/ConversationHistory';
 import type { VisionState, ChatMessage, UserProfile } from './types';
 import { analyzeFace, searchOrIndexFace, checkLiveness, createCollection, checkDemoMode } from './api/verifeye';
 import { getChatResponse } from './api/claude';
-import { saveUserProfile, updateUserName, getCollectionId, getUserProfile, getUserProfiles, deleteUserProfile } from './utils/storage';
+import { saveUserProfile, getCollectionId, getUserProfile, getUserProfiles, deleteUserProfile } from './utils/storage';
 import { speak } from './utils/speech';
 import { VideoRecorder } from './utils/videoRecorder';
 
@@ -145,7 +145,6 @@ function App() {
         }
 
         // Detect user recognition change (null -> recognized, or recognized -> different person)
-        const userIdChanged = prev.userId !== newUserId;
         const wentFromUnknownToRecognized = !prev.userId && newUserId && profile?.name && profile.name !== 'Unknown';
 
         // Also handle case where initial greeting was generic but we now recognize them
@@ -307,66 +306,14 @@ function App() {
     }
   }, []);
 
-  // Force an immediate face recognition check
+  // Note: Face recognition happens automatically every 3 seconds via handleFrameCapture
+  // This function just ensures the vision state is fresh for identity questions
   const forceRecognitionCheck = useCallback(async () => {
-    console.log('🔍 Force face recognition check requested');
-    const videoElement = videoRef.current;
-    if (!videoElement || !isMonitoring) return;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = videoElement.videoWidth;
-    canvas.height = videoElement.videoHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.drawImage(videoElement, 0, 0);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-
-    try {
-      // Run face recognition only (skip emotion/demographics for speed)
-      const faceResult = await searchOrIndexFace(dataUrl, collectionIdRef.current, 60);
-      console.log('✅ On-demand face result:', faceResult.resultSource, '| faceId:', faceResult.faceId);
-
-      // Update vision state with fresh recognition data
-      setVisionState(prev => {
-        const newUserId = faceResult?.faceId || prev.userId;
-        const profile = newUserId ? getUserProfile(newUserId) : null;
-        const isNewUser = faceResult?.resultSource === 'Index';
-
-        console.log('👤 On-demand vision state update:', {
-          resultSource: faceResult?.resultSource,
-          faceId: faceResult?.faceId,
-          profile: profile?.name,
-        });
-
-        // CRITICAL: Preserve current session userName unless we have a better one
-        // Don't overwrite with null just because faceId changed
-        const newUserName = profile?.name && profile.name !== 'Unknown'
-          ? profile.name
-          : prev.userName; // Keep whatever name we already have
-
-        const updatedState = {
-          ...prev,
-          userId: newUserId,
-          userName: newUserName,
-          isNewUser,
-          confidence: faceResult?.similarity || prev.confidence,
-        };
-
-        console.log('👤 Preserving userName:', {
-          profileName: profile?.name,
-          prevUserName: prev.userName,
-          finalUserName: newUserName,
-        });
-
-        // Update ref immediately
-        visionStateRef.current = updatedState;
-        return updatedState;
-      });
-    } catch (error) {
-      console.error('❌ On-demand face recognition error:', error);
-    }
-  }, [isMonitoring]);
+    console.log('🔍 Using latest vision state for identity question');
+    // The automatic frame capture will provide the most recent data
+    // No need to manually capture - just return and use current visionStateRef
+    return;
+  }, []);
 
   // Handle voice transcript
   const handleVoiceTranscript = useCallback(async (transcript: string) => {

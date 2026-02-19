@@ -14,7 +14,6 @@ export function speak(text: string, onEnd?: () => void): void {
   }
 
   // Clear previous callback to prevent double-firing
-  const previousCallback = currentOnEndCallback;
   currentOnEndCallback = null;
 
   window.speechSynthesis.cancel();
