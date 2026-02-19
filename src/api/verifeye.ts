@@ -1,7 +1,7 @@
 import type { VerifEyeResponse } from '../types';
 
-// Use local proxy server instead of direct API calls (CORS fix)
-const PROXY_BASE_URL = 'http://localhost:3001/api';
+// Use local proxy server in dev, deployed server in production
+const PROXY_BASE_URL = import.meta.env.VITE_PROXY_URL || 'http://localhost:3001/api';
 
 /**
  * Check if server is running in demo mode
