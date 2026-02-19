@@ -2,9 +2,11 @@
 
 A live AI avatar you can **talk to** (not type to) that demonstrates VerifEye's real-time vision capabilities.
 
-**Try the live demo:** [your-vercel-url.vercel.app](#) _(No setup required - uses demo mode)_
+**Try the live demo:** Coming soon! _(Will use demo mode - no setup required)_
 
 **Or run locally** with your own API keys for real VerifEye integration.
+
+**GitHub:** https://github.com/ScottJeezey/vision-chat-avatar
 
 ## Features
 
