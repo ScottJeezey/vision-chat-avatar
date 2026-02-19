@@ -2,11 +2,12 @@
 
 A live AI avatar you can **talk to** (not type to) that demonstrates VerifEye's real-time vision capabilities.
 
-**Try the live demo:** Coming soon! _(Will use demo mode - no setup required)_
-
-**Or run locally** with your own API keys for real VerifEye integration.
+**🚀 Live Demo:** [vision-chat-avatar.vercel.app](https://vision-chat-avatar.vercel.app)
+Real VerifEye face recognition + Claude AI conversation!
 
 **GitHub:** https://github.com/ScottJeezey/vision-chat-avatar
+
+**Or run locally** for development
 
 ## Features
 
@@ -176,6 +177,14 @@ Claude uses this to:
 - **Frontend:** React + TypeScript + Vite
 - **Styling:** Tailwind CSS (Realeyes brand colors)
 - **Storage:** Browser localStorage (face recognition collection)
+
+## Deployment
+
+**Live Production Stack:**
+- **Frontend:** Vercel ([vision-chat-avatar.vercel.app](https://vision-chat-avatar.vercel.app))
+- **Backend API:** Render ([verifeye-proxy.onrender.com](https://verifeye-proxy.onrender.com))
+- **Vision APIs:** VerifEye Cloud (realeyes.ai)
+- **AI:** Claude API (Anthropic)
 
 ## Architecture
 
