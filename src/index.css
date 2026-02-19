@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --mint-green: #27EABF;
+    --emerald-green: #2DC0A2;
+    --dark-text: #263235;
+    --grey-dark: #666666;
+    --grey-mid: #B0B0B0;
+    --grey-light: #E5E5E5;
+    --grey-lighter: #F5F5F5;
+    --grey-lightest: #FAFAFA;
+    --blue-mid: #4085f3;
+    --blue-light: #93C5FD;
+  }
+
+  body {
+    @apply font-sans bg-grey-lightest text-dark-text;
+    line-height: 1.6;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-dark-text text-white border-2 border-dark-text rounded-lg px-6 py-3 font-semibold transition-all duration-200;
+  }
+
+  .btn-primary:hover {
+    @apply bg-mint-green border-mint-green text-dark-text -translate-y-0.5;
+    box-shadow: 0 4px 12px rgba(39, 234, 191, 0.3);
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-dark-text border-2 border-grey-light rounded-lg px-6 py-3 font-semibold transition-all duration-200;
+  }
+
+  .btn-secondary:hover {
+    @apply border-mint-green text-emerald-green -translate-y-0.5;
+  }
+
+  .card {
+    @apply bg-white border border-grey-light rounded-xl p-6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-highlight {
+    @apply border-emerald-green;
+    background: rgba(45, 192, 162, 0.08);
+  }
+}
