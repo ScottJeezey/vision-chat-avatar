@@ -59,6 +59,8 @@ export function speak(text: string, onEnd?: () => void): void {
     utterance.onend = cleanup;
     utterance.onerror = (error) => {
       console.error('🔊 TTS error:', error);
+      // Force cancel and cleanup on any error (including 'interrupted')
+      window.speechSynthesis.cancel();
       cleanup();
     };
 
