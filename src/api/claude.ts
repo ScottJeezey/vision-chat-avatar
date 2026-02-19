@@ -1,16 +1,10 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { ChatMessage, VisionState } from '../types';
 
-// NOTE: In production, API key should be in environment variable
-const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY || '';
-
-const client = new Anthropic({
-  apiKey: ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true, // Only for demo purposes
-});
+// Get proxy URL from environment or use default
+const PROXY_URL = import.meta.env.VITE_PROXY_URL || 'http://localhost:3001/api';
 
 /**
- * Generate chat response with vision context
+ * Generate chat response with vision context (via proxy server)
  */
 export async function getChatResponse(
   messages: ChatMessage[],
@@ -26,19 +20,31 @@ export async function getChatResponse(
   });
 
   try {
-    console.log('🤖 Calling Claude API with', messages.length, 'messages');
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 150, // Keep responses short for natural conversation
-      system: systemPrompt,
-      messages: messages.map(msg => ({
-        role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
-        content: msg.content,
-      })),
+    console.log('🤖 Calling Claude API via proxy with', messages.length, 'messages');
+
+    const response = await fetch(`${PROXY_URL}/claude/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        system: systemPrompt,
+        messages: messages.map(msg => ({
+          role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
+          content: msg.content,
+        })),
+      }),
     });
 
-    console.log('🤖 Claude API response:', response);
-    const content = response.content[0];
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to get response from Claude');
+    }
+
+    const data = await response.json();
+    console.log('🤖 Claude API response:', data);
+
+    const content = data.content[0];
     if (content.type === 'text') {
       return content.text;
     }

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const Anthropic = require('@anthropic-ai/sdk');
 // Load .env from parent directory for local dev, Railway/Render will set env vars directly
 require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? '.env' : '../.env' });
 const {
@@ -13,11 +14,15 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3001; // Use Railway/Render PORT or default to 3001
 
-// VerifEye API credentials from environment variables
+// API credentials from environment variables
 const VERIFEYE_API_KEY = process.env.VERIFEYE_API_KEY;
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const REGION = process.env.VERIFEYE_REGION || 'us';
 
-// Check if running in demo mode (no API key)
+// Initialize Anthropic client
+const anthropic = ANTHROPIC_API_KEY ? new Anthropic({ apiKey: ANTHROPIC_API_KEY }) : null;
+
+// Check if running in demo mode (no API keys)
 const DEMO_MODE = !VERIFEYE_API_KEY;
 
 if (DEMO_MODE) {
@@ -27,6 +32,14 @@ if (DEMO_MODE) {
   console.warn('');
 } else {
   console.log('✅ Live mode: Using real VerifEye API');
+}
+
+if (!ANTHROPIC_API_KEY) {
+  console.warn('⚠️  WARNING: ANTHROPIC_API_KEY not found in .env');
+  console.warn('⚠️  Claude chat functionality will not work');
+  console.warn('');
+} else {
+  console.log('✅ Anthropic API key configured');
 }
 
 const BASE_URLS = {
@@ -292,6 +305,38 @@ app.post('/api/face-recognition/collection/create', async (req, res) => {
   } catch (error) {
     console.error('Collection create error:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Proxy endpoint for Claude API
+app.post('/api/claude/chat', async (req, res) => {
+  if (!ANTHROPIC_API_KEY) {
+    return res.status(500).json({
+      error: 'Anthropic API key not configured on server'
+    });
+  }
+
+  try {
+    const { messages, system } = req.body;
+
+    console.log('🤖 Proxying Claude API request with', messages.length, 'messages');
+
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 150,
+      system: system,
+      messages: messages,
+    });
+
+    console.log('🤖 Claude API response received');
+    res.json(response);
+  } catch (error) {
+    console.error('🤖 Claude API error:', error);
+    res.status(error.status || 500).json({
+      error: error.message,
+      type: error.type,
+      status: error.status
+    });
   }
 });
 

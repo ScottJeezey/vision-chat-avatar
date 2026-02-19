@@ -72,15 +72,18 @@ cp .env.example .env
 Edit `.env` and add your API keys:
 
 ```
-# Anthropic API Key
-VITE_ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxx
+# Anthropic API Key (for backend server - SECURE)
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxx
 
-# VerifEye API Key
+# VerifEye API Keys (for backend server)
 VERIFEYE_API_KEY=your_verifeye_api_key
-
-# VerifEye Region (us or eu)
 VERIFEYE_REGION=us
+
+# Frontend proxy URL (for local development)
+VITE_PROXY_URL=http://localhost:3001/api
 ```
+
+**Note:** The Anthropic API key is now used only on the backend server for security. It's no longer exposed to the browser.
 
 ### 3. Start the Proxy Server
 
