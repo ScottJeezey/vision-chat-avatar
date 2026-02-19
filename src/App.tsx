@@ -433,9 +433,28 @@ function App() {
         setIsSpeaking(false);
         setIsListening(true);
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat error:', error);
-      const errorMessage = 'Sorry, I encountered an error. Please try again.';
+
+      // Provide more helpful error messages
+      let errorMessage = 'Sorry, I encountered an error. ';
+
+      if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+        errorMessage += 'The backend server might be waking up (takes ~30 seconds on free tier). Please try again in a moment.';
+      } else if (error?.status === 429) {
+        errorMessage += 'Rate limit reached. Please wait a moment and try again.';
+      } else if (error?.message?.includes('timeout')) {
+        errorMessage += 'Request timed out. The server might be starting up. Please try again.';
+      } else {
+        errorMessage += 'Please try again.';
+        // Log detailed error for debugging
+        console.error('Detailed error:', {
+          message: error?.message,
+          status: error?.status,
+          type: error?.type,
+          error: error
+        });
+      }
 
       const assistantMessage: ChatMessage = {
         role: 'assistant',

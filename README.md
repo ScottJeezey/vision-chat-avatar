@@ -186,6 +186,9 @@ Claude uses this to:
 - **Vision APIs:** VerifEye Cloud (realeyes.ai)
 - **AI:** Claude API (Anthropic)
 
+**⚠️ Note on First Use:**
+The backend runs on Render's free tier, which sleeps after 15 minutes of inactivity. **First request after inactivity may take 30-60 seconds** to wake up the server. Subsequent requests will be fast. If you see "backend server might be waking up" - just wait a moment and try again!
+
 ## Architecture
 
 ```
