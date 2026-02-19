@@ -326,9 +326,9 @@ function App() {
     };
     setMessages(prev => [...prev, userMessage]);
 
-    // Check if user is introducing themselves (be conservative to avoid false positives)
-    // Only match at start of sentence to avoid phrases like "I'm quite happy"
-    const nameMatch = transcript.match(/^(?:my name is|i'm|i am|call me)\s+(\w+)/i);
+    // Check if user is introducing themselves (VERY conservative to avoid false positives)
+    // ONLY match explicit name introductions - "I'm" is too ambiguous (matches "I'm wondering", "I'm thinking", etc.)
+    const nameMatch = transcript.match(/^(?:my name is|call me)\s+(\w+)/i);
     if (nameMatch) {
       const name = nameMatch[1];
       const userId = visionStateRef.current.userId; // Use ref to get latest userId
