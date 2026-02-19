@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config({ path: '../.env' });
+// Load .env from parent directory for local dev, Railway/Render will set env vars directly
+require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? '.env' : '../.env' });
 const {
   mockEmotionAttention,
   mockAge,
@@ -10,7 +11,7 @@ const {
 } = require('./mockResponses');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001; // Use Railway/Render PORT or default to 3001
 
 // VerifEye API credentials from environment variables
 const VERIFEYE_API_KEY = process.env.VERIFEYE_API_KEY;
