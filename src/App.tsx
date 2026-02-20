@@ -241,15 +241,18 @@ function App() {
       // If this was a new face (indexed), save the profile
       if (faceResult?.resultSource === 'Index' && faceResult.faceId) {
         try {
+          // Check if there's a global default name for this browser
+          const defaultName = localStorage.getItem('verifeye-default-name') || 'Unknown';
+
           const newProfile: UserProfile = {
             id: faceResult.faceId,
-            name: 'Unknown',
+            name: defaultName, // Use global name if available
             embedding: [], // Not used with API
             firstSeen: Date.now(),
             lastSeen: Date.now(),
           };
           saveUserProfile(newProfile);
-          console.log('💾 Saved new profile:', faceResult.faceId);
+          console.log('💾 Saved new profile:', faceResult.faceId, 'with name:', defaultName);
         } catch (error) {
           console.error('❌ Failed to save profile:', error);
         }
@@ -329,9 +332,10 @@ function App() {
     // Check if user wants to be forgotten (delete all profiles)
     const forgetMe = /(?:forget me|delete me|delete (?:my |all )?(?:profile|record|data)|clear (?:my |all )?(?:profile|record|data)|remove me)/i.test(transcript);
     if (forgetMe) {
-      console.log('🗑️ User requested to be forgotten - clearing all profiles');
+      console.log('🗑️ User requested to be forgotten - clearing all profiles and default name');
       localStorage.removeItem('verifeye-profiles');
       localStorage.removeItem('verifeye-collection-id');
+      localStorage.removeItem('verifeye-default-name'); // Clear global default name too
 
       // Reset vision state
       setVisionState(prev => ({
@@ -341,7 +345,7 @@ function App() {
         isNewUser: true,
       }));
 
-      console.log('✅ All profiles deleted');
+      console.log('✅ All profiles and default name deleted');
       // Don't add to conversation history - Claude will respond naturally
       return;
     }
@@ -355,7 +359,11 @@ function App() {
 
       console.log('👤 User introduced themselves:', name, '| current faceId:', userId);
 
-      // CRITICAL: Update ALL profiles in this collection with the name
+      // CRITICAL: Save name globally for this browser
+      // ALL future profiles will use this name automatically
+      localStorage.setItem('verifeye-default-name', name);
+
+      // Also update ALL existing profiles in this collection with the name
       // Face recognition might return different faceIds for same person
       const allProfiles = getUserProfiles();
       const updatedCount = allProfiles.filter(p => {
@@ -367,7 +375,7 @@ function App() {
         return false;
       }).length;
 
-      console.log(`👤 Updated ${updatedCount} profiles with name: ${name}`);
+      console.log(`👤 Saved name globally and updated ${updatedCount} existing profiles: ${name}`);
 
       // Also update/create current userId's profile
       if (userId) {

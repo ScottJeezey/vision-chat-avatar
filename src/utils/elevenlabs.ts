@@ -14,7 +14,17 @@ let isCurrentlySpeaking = false;
  * Speak text using ElevenLabs API
  * Falls back to Web Speech API if ElevenLabs is not configured
  */
+/**
+ * Remove emojis from text (they sound weird when read aloud)
+ */
+function stripEmojis(text: string): string {
+  return text.replace(/[\p{Emoji}\p{Emoji_Component}]/gu, '').trim();
+}
+
 export async function speak(text: string, onEnd?: () => void): Promise<void> {
+  // Remove emojis before speaking
+  text = stripEmojis(text);
+
   // Stop any ongoing speech
   if (currentAudio) {
     currentAudio.pause();
