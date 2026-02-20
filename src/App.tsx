@@ -350,9 +350,22 @@ function App() {
       return;
     }
 
-    // Check if user is introducing themselves (VERY conservative to avoid false positives)
-    // ONLY match explicit name introductions - "I'm" is too ambiguous (matches "I'm wondering", "I'm thinking", etc.)
-    const nameMatch = transcript.match(/^(?:my name is|call me)\s+(\w+)/i);
+    // Check if user is introducing themselves
+    // Match explicit introductions OR single word (when avatar asked for name)
+    let nameMatch = transcript.match(/^(?:my name is|call me)\s+(\w+)/i);
+
+    // Also accept single word as name (e.g., "Scott") if:
+    // 1. No name saved yet, AND
+    // 2. It's a short response (1-3 words), AND
+    // 3. Looks like a name (capitalized or short word)
+    if (!nameMatch && !visionStateRef.current.userName) {
+      const words = transcript.trim().split(/\s+/);
+      if (words.length <= 3 && words[0].length >= 2 && words[0].length <= 15) {
+        // Likely just saying their name
+        nameMatch = [transcript, words[0]]; // Fake match array
+      }
+    }
+
     if (nameMatch) {
       const name = nameMatch[1];
       const userId = visionStateRef.current.userId; // Use ref to get latest userId
