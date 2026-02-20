@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear VerifEye Profiles</title>
+</head>
+<body>
+    <h1>Clear All Profiles</h1>
+    <button onclick="clearProfiles()">Clear All Profiles</button>
+    <p id="result"></p>
+
+    <script>
+        function clearProfiles() {
+            localStorage.removeItem('verifeye-profiles');
+            localStorage.removeItem('verifeye-collection-id');
+            document.getElementById('result').innerHTML = '<strong>✅ All profiles cleared!</strong><br>Close this tab and refresh the avatar app.';
+        }
+    </script>
+</body>
+</html>

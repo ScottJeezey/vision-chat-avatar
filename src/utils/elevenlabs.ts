@@ -45,7 +45,7 @@ export async function speak(text: string, onEnd?: () => void): Promise<void> {
         },
         body: JSON.stringify({
           text: text,
-          model_id: 'eleven_monolingual_v1',
+          model_id: 'eleven_turbo_v2_5', // Free tier model (fast, multilingual)
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,

@@ -112,7 +112,7 @@ function App() {
       // Search for face or index if not found (single API call)
       let faceResult: any = null;
       try {
-        faceResult = await searchOrIndexFace(dataUrl, collectionIdRef.current, 60); // 60% threshold - balance between accuracy and consistency
+        faceResult = await searchOrIndexFace(dataUrl, collectionIdRef.current, 40); // 40% threshold - more permissive to handle lighting/angle variations
         console.log('✅ Face result:', faceResult.resultSource, '| faceId:', faceResult.faceId);
       } catch (error) {
         console.log('❌ Face search-or-index error:', error);
@@ -325,6 +325,26 @@ function App() {
       timestamp: Date.now(),
     };
     setMessages(prev => [...prev, userMessage]);
+
+    // Check if user wants to be forgotten (delete all profiles)
+    const forgetMe = /(?:forget me|delete me|delete (?:my |all )?(?:profile|record|data)|clear (?:my |all )?(?:profile|record|data)|remove me)/i.test(transcript);
+    if (forgetMe) {
+      console.log('🗑️ User requested to be forgotten - clearing all profiles');
+      localStorage.removeItem('verifeye-profiles');
+      localStorage.removeItem('verifeye-collection-id');
+
+      // Reset vision state
+      setVisionState(prev => ({
+        ...prev,
+        userId: null,
+        userName: null,
+        isNewUser: true,
+      }));
+
+      console.log('✅ All profiles deleted');
+      // Don't add to conversation history - Claude will respond naturally
+      return;
+    }
 
     // Check if user is introducing themselves (VERY conservative to avoid false positives)
     // ONLY match explicit name introductions - "I'm" is too ambiguous (matches "I'm wondering", "I'm thinking", etc.)
