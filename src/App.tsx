@@ -7,7 +7,7 @@ import type { VisionState, ChatMessage, UserProfile } from './types';
 import { analyzeFace, searchOrIndexFace, checkLiveness, createCollection, checkDemoMode } from './api/verifeye';
 import { getChatResponse } from './api/claude';
 import { saveUserProfile, getCollectionId, getUserProfile, getUserProfiles, deleteUserProfile } from './utils/storage';
-import { speak } from './utils/speech';
+import { speak } from './utils/elevenlabs'; // Using ElevenLabs TTS (falls back to Web Speech API if not configured)
 import { VideoRecorder } from './utils/videoRecorder';
 
 function App() {

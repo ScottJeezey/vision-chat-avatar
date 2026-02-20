@@ -85,6 +85,21 @@ VITE_PROXY_URL=http://localhost:3001/api
 
 **Note:** The Anthropic API key is now used only on the backend server for security. It's no longer exposed to the browser.
 
+### Optional: High-Quality Voice (ElevenLabs)
+
+For significantly better voice quality, add ElevenLabs TTS (free tier available):
+
+```bash
+# Get API key from https://elevenlabs.io
+VITE_ELEVENLABS_API_KEY=sk_your_api_key_here
+
+# Optional: Choose a different voice
+# Browse voices: https://elevenlabs.io/app/voice-library
+VITE_ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
+```
+
+If not configured, the app automatically falls back to browser's Web Speech API (lower quality but free).
+
 ### 3. Start the Proxy Server
 
 The proxy server handles VerifEye API calls (to avoid CORS issues):
@@ -173,7 +188,7 @@ Claude uses this to:
 ## Tech Stack
 
 - **Voice Input:** Web Speech API (speech-to-text)
-- **Voice Output:** Web Speech API (text-to-speech)
+- **Voice Output:** ElevenLabs TTS (high-quality, natural voice) with Web Speech API fallback
 - **Vision:** VerifEye REST API (Face Recognition, Emotion/Attention, Demographics, Liveness)
 - **AI Chat:** Claude Sonnet 4.5 (Anthropic SDK)
 - **Proxy Server:** Express.js (handles VerifEye API calls)
