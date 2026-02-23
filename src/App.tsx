@@ -378,8 +378,19 @@ function App() {
       lastGreetingTimeRef.current = 0;
       lastUserChangeRef.current = 0;
 
-      // Reset collection ID (will create a new one on next face capture)
+      // Reset collection ID and create new collection immediately
       collectionIdRef.current = getCollectionId();
+
+      // CRITICAL: Create the new collection NOW, don't wait for next mount
+      try {
+        await createCollection(
+          collectionIdRef.current,
+          'Vision Avatar Face Recognition Collection'
+        );
+        console.log('✅ New collection created after forget me:', collectionIdRef.current);
+      } catch (error) {
+        console.error('❌ Failed to create new collection after forget me:', error);
+      }
 
       console.log('🗑️ After clear - localStorage:', {
         profiles: localStorage.getItem('verifeye_user_profiles'),
