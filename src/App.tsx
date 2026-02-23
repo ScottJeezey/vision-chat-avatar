@@ -149,11 +149,9 @@ function App() {
         // Detect user recognition change (null -> recognized, or recognized -> different person)
         const wentFromUnknownToRecognized = !prev.userId && newUserId && profile?.name && profile.name !== 'Unknown';
 
-        // Also handle case where initial greeting was generic but we now recognize them
-        const newName = profile?.name && profile.name !== 'Unknown' ? profile.name : null;
-        const recognizedAfterGenericGreeting = hasGreetedRef.current &&
-                                               !greetedWithNameRef.current &&
-                                               newName;
+        // IMPORTANT: Only recognize if the userId (face embedding) CHANGED
+        // Don't re-greet the same person we just greeted!
+        const userIdChanged = prev.userId && newUserId && prev.userId !== newUserId;
 
         // Also detect demographic changes (different person)
         const demographicsChanged =
@@ -163,18 +161,15 @@ function App() {
         const timeSinceLastChange = Date.now() - lastUserChangeRef.current;
         const canAnnounceChange = timeSinceLastChange > 60000; // 60 second cooldown
 
-        // For recognition after generic greeting, use shorter cooldown (10 seconds)
-        const canAnnounceRecognition = recognizedAfterGenericGreeting &&
-                                       timeSinceLastChange > 10000;
-
         // ALSO check time since last greeting (prevent greetings too close together)
         const timeSinceLastGreeting = Date.now() - lastGreetingTimeRef.current;
         const greetingCooldownPassed = timeSinceLastGreeting > 60000; // 60 second cooldown between ANY greetings
 
-        // Announce if: went from unknown to recognized, OR demographics changed, OR recognized after generic greeting
-        // BUT: Always respect the greeting cooldown to prevent interruptions
-        const shouldAnnounce = ((wentFromUnknownToRecognized || demographicsChanged) && canAnnounceChange ||
-                               canAnnounceRecognition) &&
+        // ONLY greet when:
+        // 1. Face embedding changed (different person detected), OR
+        // 2. Demographics changed significantly (different person)
+        // DON'T re-greet the same person we just met!
+        const shouldAnnounce = (userIdChanged || (wentFromUnknownToRecognized || demographicsChanged) && canAnnounceChange) &&
                                greetingCooldownPassed &&
                                !isSpeakingRef.current &&
                                !isThinking &&
