@@ -337,11 +337,37 @@ function App() {
     const forgetMe = /(?:forget me|delete me|delete (?:my |all )?(?:profile|record|data)|clear (?:my |all )?(?:profile|record|data)|remove me)/i.test(transcript);
     if (forgetMe) {
       console.log('🗑️ User requested to be forgotten - clearing all profiles and default name');
-      localStorage.clear(); // Clear everything
-      console.log('✅ All profiles and default name deleted - reloading page');
 
-      // Reload page to reset state (same as button behavior)
-      window.location.reload();
+      // Clear localStorage
+      localStorage.removeItem('verifeye-profiles');
+      localStorage.removeItem('verifeye-collection-id');
+      localStorage.removeItem('verifeye-default-name');
+
+      // Reset all refs
+      hasGreetedRef.current = false;
+      greetedWithNameRef.current = null;
+      lastGreetingTimeRef.current = 0;
+      lastUserChangeRef.current = 0;
+
+      // Reset vision state
+      setVisionState({
+        userId: null,
+        userName: null,
+        confidence: 0,
+        isLive: true,
+        age: null,
+        gender: null,
+        emotion: null,
+        attention: null,
+        isNewUser: true,
+        lastUpdate: Date.now(),
+      });
+
+      // Clear conversation history
+      setMessages([]);
+
+      console.log('✅ All profiles deleted - ready for new user');
+      // Don't add to conversation - let avatar give fresh greeting
       return;
     }
 
@@ -350,8 +376,16 @@ function App() {
     // "My name is Scott" or "Call me Scott"
     const nameMatch = transcript.match(/(?:my name is|call me)\s+(\w+)/i);
 
+    // Filter out non-names (common words that might match)
+    const nonNames = /^(creator|developer|user|person|human|troubleshooting|testing|trying|working|thinking|wondering|confused|happy|sad)$/i;
+
     if (nameMatch) {
       const name = nameMatch[1];
+      // Reject if it's a common non-name word
+      if (nonNames.test(name)) {
+        console.log('❌ Rejected name extraction:', name, '(common word, not a name)');
+        // Continue processing as normal conversation
+      } else {
       const userId = visionStateRef.current.userId; // Use ref to get latest userId
 
       console.log('👤 User introduced themselves:', name, '| current faceId:', userId);
@@ -395,6 +429,7 @@ function App() {
       setVisionState(prev => ({ ...prev, userName: name }));
       visionStateRef.current = { ...visionStateRef.current, userName: name };
       console.log('👤 Name saved to all profiles, state, and ref:', name);
+      }
     }
 
     // Check if user is asking about their identity - trigger fresh recognition
