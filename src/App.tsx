@@ -514,8 +514,10 @@ function App() {
       }
 
       // Update state and ref
-      setVisionState(prev => ({ ...prev, userName: name }));
-      visionStateRef.current = { ...visionStateRef.current, userName: name };
+      // IMPORTANT: Set isNewUser=true when user introduces themselves, even if face was recognized
+      // This ensures Claude treats them as a new user during introduction
+      setVisionState(prev => ({ ...prev, userName: name, isNewUser: true }));
+      visionStateRef.current = { ...visionStateRef.current, userName: name, isNewUser: true };
       console.log('👤 ✅ COMPLETE! Name saved to all profiles, state, and ref:', name);
       }
     } else {
