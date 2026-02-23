@@ -176,6 +176,9 @@ function App() {
                                hasGreetedRef.current;
 
         if (shouldAnnounce) {
+          // Get the new user's name (if available)
+          const newName = profile?.name && profile.name !== 'Unknown' ? profile.name : null;
+
           lastUserChangeRef.current = Date.now();
           lastGreetingTimeRef.current = Date.now(); // Track greeting time
           greetedWithNameRef.current = newName; // Update greeted name
@@ -188,7 +191,6 @@ function App() {
             newName,
             wentFromUnknownToRecognized,
             demographicsChanged,
-            recognizedAfterGenericGreeting,
           });
 
           // Set speaking BEFORE calling speak() to prevent race conditions
@@ -418,34 +420,53 @@ function App() {
     }
 
     // Check if user is introducing themselves
+    console.log('👤 NAME EXTRACTION START:', {
+      transcript,
+      messagesLength: messages.length,
+      lastMessageContent: messages.length > 0 ? messages[messages.length - 1].content.substring(0, 50) : 'NONE'
+    });
+
     // Pattern 1: Explicit introductions like "My name is Scott" or "Call me Scott"
     let nameMatch = transcript.match(/(?:my name is|call me|i'm|i am)\s+(\w+)/i);
+    console.log('👤 Pattern 1 (explicit intro) match:', nameMatch);
 
     // Pattern 2: If avatar just asked for their name, and user responds with 1-2 words, treat it as their name
     const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    console.log('👤 Last message:', lastMessage ? { role: lastMessage.role, content: lastMessage.content.substring(0, 100) } : 'NULL');
+
     const avatarAskedForName = lastMessage && lastMessage.role === 'assistant' &&
                                /(?:what'?s your name|what is your name|who are you|may i (?:have|know) your name)/i.test(lastMessage.content);
+    console.log('👤 Avatar asked for name?', avatarAskedForName);
 
     if (!nameMatch && avatarAskedForName) {
+      console.log('👤 Trying Pattern 2 (context-based)...');
       // User is responding to "what's your name?" - treat short responses as names
       const words = transcript.trim().split(/\s+/);
+      console.log('👤 Words:', words, '| Length:', words.length);
       if (words.length <= 2 && words.length > 0) {
         // Likely just their name
         nameMatch = [transcript, words[words.length - 1]]; // Use last word as name
-        console.log('👤 Detected name from context (avatar asked):', nameMatch[1]);
+        console.log('👤 ✅ Detected name from context (avatar asked):', nameMatch[1]);
       }
     }
+
+    console.log('👤 Final nameMatch:', nameMatch);
 
     // Filter out non-names (common words that might match)
     const nonNames = /^(creator|developer|user|person|human|troubleshooting|testing|trying|working|thinking|wondering|confused|happy|sad|yeah|yes|no|okay|ok|sure|maybe|dunno)$/i;
 
+    console.log('👤 Checking if nameMatch is valid...');
     if (nameMatch) {
+      console.log('👤 nameMatch EXISTS!');
       const name = nameMatch[1];
+      console.log('👤 Extracted name:', name);
+      console.log('👤 Testing against nonNames regex...');
       // Reject if it's a common non-name word
       if (nonNames.test(name)) {
         console.log('❌ Rejected name extraction:', name, '(common word, not a name)');
         // Continue processing as normal conversation
       } else {
+      console.log('👤 ✅ Name is VALID! Proceeding to save...');
       const userId = visionStateRef.current.userId; // Use ref to get latest userId
 
       console.log('👤 User introduced themselves:', name, '| current faceId:', userId);
@@ -488,9 +509,13 @@ function App() {
       // Update state and ref
       setVisionState(prev => ({ ...prev, userName: name }));
       visionStateRef.current = { ...visionStateRef.current, userName: name };
-      console.log('👤 Name saved to all profiles, state, and ref:', name);
+      console.log('👤 ✅ COMPLETE! Name saved to all profiles, state, and ref:', name);
       }
+    } else {
+      console.log('👤 No nameMatch found - skipping name extraction');
     }
+
+    console.log('👤 NAME EXTRACTION END');
 
     // Check if user is asking about their identity - trigger fresh recognition
     const identityQuestions = /(?:do you know (?:me|my name|who i am)|know my name|recognize me|remember me|who am i|what'?s my name|you know me)/i;
