@@ -240,7 +240,7 @@ function App() {
           finalUserName,
         });
 
-        return {
+        const newState = {
           userId: newUserId,
           // Preserve current userName if profile doesn't have a name (don't overwrite!)
           userName: finalUserName,
@@ -253,6 +253,11 @@ function App() {
           isNewUser,
           lastUpdate: Date.now(),
         };
+
+        // CRITICAL: Update ref immediately to prevent stale emotion/attention data
+        visionStateRef.current = newState;
+
+        return newState;
       });
 
       // If this was a new face (indexed), save the profile
