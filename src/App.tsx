@@ -418,12 +418,26 @@ function App() {
     }
 
     // Check if user is introducing themselves
-    // SIMPLE & RELIABLE: Only match explicit name introductions
-    // "My name is Scott" or "Call me Scott"
-    const nameMatch = transcript.match(/(?:my name is|call me)\s+(\w+)/i);
+    // Pattern 1: Explicit introductions like "My name is Scott" or "Call me Scott"
+    let nameMatch = transcript.match(/(?:my name is|call me|i'm|i am)\s+(\w+)/i);
+
+    // Pattern 2: If avatar just asked for their name, and user responds with 1-2 words, treat it as their name
+    const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    const avatarAskedForName = lastMessage && lastMessage.role === 'assistant' &&
+                               /(?:what'?s your name|what is your name|who are you|may i (?:have|know) your name)/i.test(lastMessage.content);
+
+    if (!nameMatch && avatarAskedForName) {
+      // User is responding to "what's your name?" - treat short responses as names
+      const words = transcript.trim().split(/\s+/);
+      if (words.length <= 2 && words.length > 0) {
+        // Likely just their name
+        nameMatch = [transcript, words[words.length - 1]]; // Use last word as name
+        console.log('👤 Detected name from context (avatar asked):', nameMatch[1]);
+      }
+    }
 
     // Filter out non-names (common words that might match)
-    const nonNames = /^(creator|developer|user|person|human|troubleshooting|testing|trying|working|thinking|wondering|confused|happy|sad)$/i;
+    const nonNames = /^(creator|developer|user|person|human|troubleshooting|testing|trying|working|thinking|wondering|confused|happy|sad|yeah|yes|no|okay|ok|sure|maybe|dunno)$/i;
 
     if (nameMatch) {
       const name = nameMatch[1];
