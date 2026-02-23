@@ -358,9 +358,15 @@ function App() {
     // 1. No name saved yet, AND
     // 2. It's a short response (1-3 words), AND
     // 3. Looks like a name (capitalized or short word)
+    // 4. NOT a common word
+    const commonWords = /^(got|not|what|yes|no|yeah|nope|okay|ok|hi|hey|hello|thanks|thank|please|sorry|maybe|just|well|now|here|there|that|this|the|and|but|for|with|from|about|like|want|need|know|think|feel|look|see|have|has|had|can|could|would|should|will|shall)$/i;
     if (!nameMatch && !visionStateRef.current.userName) {
       const words = transcript.trim().split(/\s+/);
-      if (words.length <= 3 && words[0].length >= 2 && words[0].length <= 15) {
+      const firstWord = words[0].toLowerCase();
+      if (words.length <= 3 &&
+          words[0].length >= 2 &&
+          words[0].length <= 15 &&
+          !commonWords.test(firstWord)) {
         // Likely just saying their name
         nameMatch = [transcript, words[0]]; // Fake match array
       }
