@@ -215,7 +215,13 @@ function App() {
         // Give initial greeting after first successful face analysis
         if (!hasGreetedRef.current && isMonitoring) {
           const userName = profile?.name && profile.name !== 'Unknown' ? profile.name : null;
-          console.log('🎤 Giving initial greeting, userName:', userName);
+          console.log('🎤 Giving initial greeting:', {
+            userName,
+            profileName: profile?.name,
+            profileId: profile?.id,
+            visionStateUserName: prev.userName,
+            hasGreeted: hasGreetedRef.current,
+          });
           setTimeout(() => giveInitialGreeting(userName), 500);
         }
 
@@ -248,6 +254,16 @@ function App() {
           // Check if there's a global default name for this browser
           const defaultName = localStorage.getItem('verifeye-default-name') || 'Unknown';
 
+          console.log('💾 Creating new profile:', {
+            faceId: faceResult.faceId,
+            defaultName,
+            allLocalStorage: {
+              profiles: localStorage.getItem('verifeye-profiles'),
+              collectionId: localStorage.getItem('verifeye-collection-id'),
+              defaultName: localStorage.getItem('verifeye-default-name'),
+            }
+          });
+
           const newProfile: UserProfile = {
             id: faceResult.faceId,
             name: defaultName, // Use global name if available
@@ -256,7 +272,7 @@ function App() {
             lastSeen: Date.now(),
           };
           saveUserProfile(newProfile);
-          console.log('💾 Saved new profile:', faceResult.faceId, 'with name:', defaultName);
+          console.log('💾 Profile saved. All profiles now:', getUserProfiles().map(p => ({ id: p.id, name: p.name })));
         } catch (error) {
           console.error('❌ Failed to save profile:', error);
         }
@@ -337,7 +353,12 @@ function App() {
     // Include common speech recognition mishearings of "forget me" like "or get me", "forget", etc.
     const forgetMe = /(?:forget me|or get me|forget|delete me|delete (?:my |all )?(?:profile|record|data)|clear (?:my |all )?(?:profile|record|data)|remove me|reset|start over)/i.test(transcript);
     if (forgetMe) {
-      console.log('🗑️ User requested to be forgotten - clearing all profiles and default name');
+      console.log('🗑️ FORGET ME TRIGGERED! Transcript was:', transcript);
+      console.log('🗑️ Before clear - localStorage:', {
+        profiles: localStorage.getItem('verifeye-profiles'),
+        collectionId: localStorage.getItem('verifeye-collection-id'),
+        defaultName: localStorage.getItem('verifeye-default-name'),
+      });
 
       // Clear localStorage
       localStorage.removeItem('verifeye-profiles');
@@ -352,6 +373,12 @@ function App() {
 
       // Reset collection ID (will create a new one on next face capture)
       collectionIdRef.current = getCollectionId();
+
+      console.log('🗑️ After clear - localStorage:', {
+        profiles: localStorage.getItem('verifeye-profiles'),
+        collectionId: localStorage.getItem('verifeye-collection-id'),
+        defaultName: localStorage.getItem('verifeye-default-name'),
+      });
 
       // Reset vision state (both state and ref to prevent race conditions)
       const resetVisionState = {
@@ -372,8 +399,21 @@ function App() {
       // Clear conversation history
       setMessages([]);
 
-      console.log('✅ All profiles deleted - ready for new user');
-      // Don't add to conversation - let avatar give fresh greeting
+      // Add confirmation message
+      const confirmMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'Done! All your data has been deleted. Nice to meet you!',
+        timestamp: Date.now(),
+      };
+      setMessages([confirmMessage]);
+
+      // Speak confirmation
+      setIsSpeaking(true);
+      setTimeout(() => {
+        speak('Done! All your data has been deleted. Nice to meet you!', () => setIsSpeaking(false));
+      }, 300);
+
+      console.log('✅ FORGET ME COMPLETE - All profiles deleted, ready for new user');
       return;
     }
 
