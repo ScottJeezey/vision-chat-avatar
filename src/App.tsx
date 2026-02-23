@@ -334,7 +334,8 @@ function App() {
     setMessages(prev => [...prev, userMessage]);
 
     // Check if user wants to be forgotten (delete all profiles)
-    const forgetMe = /(?:forget me|delete me|delete (?:my |all )?(?:profile|record|data)|clear (?:my |all )?(?:profile|record|data)|remove me)/i.test(transcript);
+    // Include common speech recognition mishearings of "forget me" like "or get me", "forget", etc.
+    const forgetMe = /(?:forget me|or get me|forget|delete me|delete (?:my |all )?(?:profile|record|data)|clear (?:my |all )?(?:profile|record|data)|remove me|reset|start over)/i.test(transcript);
     if (forgetMe) {
       console.log('🗑️ User requested to be forgotten - clearing all profiles and default name');
 
