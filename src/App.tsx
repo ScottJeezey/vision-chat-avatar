@@ -337,20 +337,11 @@ function App() {
     const forgetMe = /(?:forget me|delete me|delete (?:my |all )?(?:profile|record|data)|clear (?:my |all )?(?:profile|record|data)|remove me)/i.test(transcript);
     if (forgetMe) {
       console.log('🗑️ User requested to be forgotten - clearing all profiles and default name');
-      localStorage.removeItem('verifeye-profiles');
-      localStorage.removeItem('verifeye-collection-id');
-      localStorage.removeItem('verifeye-default-name'); // Clear global default name too
+      localStorage.clear(); // Clear everything
+      console.log('✅ All profiles and default name deleted - reloading page');
 
-      // Reset vision state
-      setVisionState(prev => ({
-        ...prev,
-        userId: null,
-        userName: null,
-        isNewUser: true,
-      }));
-
-      console.log('✅ All profiles and default name deleted');
-      // Don't add to conversation history - Claude will respond naturally
+      // Reload page to reset state (same as button behavior)
+      window.location.reload();
       return;
     }
 
