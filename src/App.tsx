@@ -40,6 +40,10 @@ function App() {
     isSpeakingRef.current = isSpeaking;
   }, [isSpeaking]);
 
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   // Initialize on mount
   useEffect(() => {
     const initialize = async () => {
@@ -71,6 +75,7 @@ function App() {
   const lastGreetingTimeRef = useRef<number>(0); // Track if we greeted with a specific name
   const visionStateRef = useRef<VisionState>(visionState);
   const isSpeakingRef = useRef<boolean>(false);
+  const messagesRef = useRef<ChatMessage[]>([]);
   const lastUserChangeRef = useRef<number>(0); // Timestamp of last user change announcement
 
   // Give initial greeting after first face analysis
@@ -420,10 +425,12 @@ function App() {
     }
 
     // Check if user is introducing themselves
+    // IMPORTANT: Use messagesRef to get the latest messages, not the closure variable
+    const currentMessages = messagesRef.current;
     console.log('👤 NAME EXTRACTION START:', {
       transcript,
-      messagesLength: messages.length,
-      lastMessageContent: messages.length > 0 ? messages[messages.length - 1].content.substring(0, 50) : 'NONE'
+      messagesLength: currentMessages.length,
+      lastMessageContent: currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].content.substring(0, 50) : 'NONE'
     });
 
     // Pattern 1: Explicit introductions like "My name is Scott" or "Call me Scott"
@@ -431,7 +438,7 @@ function App() {
     console.log('👤 Pattern 1 (explicit intro) match:', nameMatch);
 
     // Pattern 2: If avatar just asked for their name, and user responds with 1-2 words, treat it as their name
-    const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    const lastMessage = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1] : null;
     console.log('👤 Last message:', lastMessage ? { role: lastMessage.role, content: lastMessage.content.substring(0, 100) } : 'NULL');
 
     const avatarAskedForName = lastMessage && lastMessage.role === 'assistant' &&
