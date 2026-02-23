@@ -355,14 +355,14 @@ function App() {
     if (forgetMe) {
       console.log('🗑️ FORGET ME TRIGGERED! Transcript was:', transcript);
       console.log('🗑️ Before clear - localStorage:', {
-        profiles: localStorage.getItem('verifeye-profiles'),
-        collectionId: localStorage.getItem('verifeye-collection-id'),
+        profiles: localStorage.getItem('verifeye_user_profiles'),
+        collectionId: localStorage.getItem('verifeye_collection_id'),
         defaultName: localStorage.getItem('verifeye-default-name'),
       });
 
-      // Clear localStorage
-      localStorage.removeItem('verifeye-profiles');
-      localStorage.removeItem('verifeye-collection-id');
+      // Clear localStorage (using correct keys with underscores!)
+      localStorage.removeItem('verifeye_user_profiles');
+      localStorage.removeItem('verifeye_collection_id');
       localStorage.removeItem('verifeye-default-name');
 
       // Reset all refs
@@ -375,8 +375,8 @@ function App() {
       collectionIdRef.current = getCollectionId();
 
       console.log('🗑️ After clear - localStorage:', {
-        profiles: localStorage.getItem('verifeye-profiles'),
-        collectionId: localStorage.getItem('verifeye-collection-id'),
+        profiles: localStorage.getItem('verifeye_user_profiles'),
+        collectionId: localStorage.getItem('verifeye_collection_id'),
         defaultName: localStorage.getItem('verifeye-default-name'),
       });
 
