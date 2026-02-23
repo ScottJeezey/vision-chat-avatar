@@ -352,8 +352,8 @@ function App() {
       // Reset collection ID (will create a new one on next face capture)
       collectionIdRef.current = getCollectionId();
 
-      // Reset vision state
-      setVisionState({
+      // Reset vision state (both state and ref to prevent race conditions)
+      const resetVisionState = {
         userId: null,
         userName: null,
         confidence: 0,
@@ -364,7 +364,9 @@ function App() {
         attention: null,
         isNewUser: true,
         lastUpdate: Date.now(),
-      });
+      };
+      setVisionState(resetVisionState);
+      visionStateRef.current = resetVisionState; // Immediately update ref too
 
       // Clear conversation history
       setMessages([]);
