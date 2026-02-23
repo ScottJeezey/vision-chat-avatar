@@ -349,6 +349,9 @@ function App() {
       lastGreetingTimeRef.current = 0;
       lastUserChangeRef.current = 0;
 
+      // Reset collection ID (will create a new one on next face capture)
+      collectionIdRef.current = getCollectionId();
+
       // Reset vision state
       setVisionState({
         userId: null,
