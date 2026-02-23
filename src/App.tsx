@@ -67,7 +67,8 @@ function App() {
   const livenessCheckIntervalRef = useRef<number | null>(null);
   const collectionIdRef = useRef<string>(getCollectionId());
   const hasGreetedRef = useRef(false);
-  const greetedWithNameRef = useRef<string | null>(null); // Track if we greeted with a specific name
+  const greetedWithNameRef = useRef<string | null>(null);
+  const lastGreetingTimeRef = useRef<number>(0); // Track if we greeted with a specific name
   const visionStateRef = useRef<VisionState>(visionState);
   const isSpeakingRef = useRef<boolean>(false);
   const lastUserChangeRef = useRef<number>(0); // Timestamp of last user change announcement
@@ -77,6 +78,7 @@ function App() {
     if (hasGreetedRef.current) return;
     hasGreetedRef.current = true;
     greetedWithNameRef.current = userName; // Track what name we greeted with
+    lastGreetingTimeRef.current = Date.now(); // Track greeting time for cooldown
 
     const greeting = userName
       ? `Hey ${userName}! Welcome back. What would you like to talk about?`
@@ -165,15 +167,22 @@ function App() {
         const canAnnounceRecognition = recognizedAfterGenericGreeting &&
                                        timeSinceLastChange > 10000;
 
+        // ALSO check time since last greeting (prevent greetings too close together)
+        const timeSinceLastGreeting = Date.now() - lastGreetingTimeRef.current;
+        const greetingCooldownPassed = timeSinceLastGreeting > 60000; // 60 second cooldown between ANY greetings
+
         // Announce if: went from unknown to recognized, OR demographics changed, OR recognized after generic greeting
+        // BUT: Always respect the greeting cooldown to prevent interruptions
         const shouldAnnounce = ((wentFromUnknownToRecognized || demographicsChanged) && canAnnounceChange ||
                                canAnnounceRecognition) &&
+                               greetingCooldownPassed &&
                                !isSpeakingRef.current &&
                                !isThinking &&
                                hasGreetedRef.current;
 
         if (shouldAnnounce) {
           lastUserChangeRef.current = Date.now();
+          lastGreetingTimeRef.current = Date.now(); // Track greeting time
           greetedWithNameRef.current = newName; // Update greeted name
 
           const message = newName
