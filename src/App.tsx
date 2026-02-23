@@ -359,16 +359,19 @@ function App() {
     // 2. It's a short response (1-3 words), AND
     // 3. Looks like a name (capitalized or short word)
     // 4. NOT a common word
-    const commonWords = /^(got|not|what|yes|no|yeah|nope|okay|ok|hi|hey|hello|thanks|thank|please|sorry|maybe|just|well|now|here|there|that|this|the|and|but|for|with|from|about|like|want|need|know|think|feel|look|see|have|has|had|can|could|would|should|will|shall)$/i;
+    const commonWords = /^(got|not|what|yes|no|yeah|nope|okay|ok|hi|hey|hello|thanks|thank|please|sorry|maybe|just|well|now|here|there|that|this|the|and|but|for|with|from|about|like|want|need|know|think|feel|look|see|have|has|had|can|could|would|should|will|shall|name|is|am|my|i'm)$/i;
     if (!nameMatch && !visionStateRef.current.userName) {
       const words = transcript.trim().split(/\s+/);
-      const firstWord = words[0].toLowerCase();
+      // Take the LAST word (most likely to be the actual name)
+      // e.g., "name is Scott" → "Scott", "Scott" → "Scott"
+      const lastWord = words[words.length - 1];
+      const lastWordLower = lastWord.toLowerCase();
       if (words.length <= 3 &&
-          words[0].length >= 2 &&
-          words[0].length <= 15 &&
-          !commonWords.test(firstWord)) {
+          lastWord.length >= 2 &&
+          lastWord.length <= 15 &&
+          !commonWords.test(lastWordLower)) {
         // Likely just saying their name
-        nameMatch = [transcript, words[0]]; // Fake match array
+        nameMatch = [transcript, lastWord]; // Fake match array
       }
     }
 
