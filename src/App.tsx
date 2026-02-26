@@ -220,7 +220,8 @@ function App() {
         }
 
         // Give initial greeting after first successful face analysis
-        if (!hasGreetedRef.current && isMonitoring) {
+        // IMPORTANT: Don't interrupt if already speaking or thinking
+        if (!hasGreetedRef.current && isMonitoring && !isSpeakingRef.current && !isThinking) {
           const userName = profile?.name && profile.name !== 'Unknown' ? profile.name : null;
           console.log('🎤 Giving initial greeting:', {
             userName,
@@ -433,7 +434,12 @@ function App() {
       // Speak confirmation
       setIsSpeaking(true);
       setTimeout(() => {
-        speak('Done! All your data has been deleted. Nice to meet you!', () => setIsSpeaking(false));
+        speak('Done! All your data has been deleted. Nice to meet you!', () => {
+          setIsSpeaking(false);
+          // Mark as greeted so we don't interrupt with "hi we haven't met yet"
+          hasGreetedRef.current = true;
+          lastGreetingTimeRef.current = Date.now();
+        });
       }, 300);
 
       console.log('✅ FORGET ME COMPLETE - All profiles deleted, ready for new user');
