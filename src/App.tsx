@@ -432,10 +432,13 @@ function App() {
       setMessages([confirmMessage]);
 
       // Speak confirmation
+      // CRITICAL: Set ref directly BEFORE state to prevent race condition
+      isSpeakingRef.current = true;
       setIsSpeaking(true);
       setTimeout(() => {
         speak('Done! All your data has been deleted. Nice to meet you!', () => {
           setIsSpeaking(false);
+          isSpeakingRef.current = false;
           // Mark as greeted so we don't interrupt with "hi we haven't met yet"
           hasGreetedRef.current = true;
           lastGreetingTimeRef.current = Date.now();
